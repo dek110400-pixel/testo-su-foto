@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e0e10">
+<title>Testo su Foto</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+:root{--bg:#0e0e10;--panel:#18181c;--line:#2c2c33;--fg:#f2f2f4;--mut:#9a9aa4;--acc:#ffb300}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+body{display:grid;grid-template-rows:auto minmax(0,1fr) 46dvh;height:100dvh}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));border-bottom:1px solid var(--line)}
+header b{flex:1;text-align:center;font-weight:600;letter-spacing:.02em}
+.btn{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+.btn.primary{background:var(--acc);color:#111;border-color:var(--acc);font-weight:600}
+#stage{display:flex;align-items:center;justify-content:center;padding:10px;min-height:0;overflow:hidden}
+#cv{max-width:100%;max-height:100%;touch-action:none;box-shadow:0 6px 30px #000a;cursor:move}
+aside{display:flex;flex-direction:column;min-height:0;border-top:1px solid var(--line);background:#121215}
+nav{display:flex;border-bottom:1px solid var(--line)}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:11px 4px;font:inherit;font-size:14px;cursor:pointer;border-bottom:2px solid transparent}
+nav button.on{color:var(--fg);border-color:var(--acc)}
+section{display:none;overflow:auto;padding:12px 14px calc(16px + env(safe-area-inset-bottom))}
+section.on{display:block}
+h4{margin:14px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);font-weight:600}
+h4:first-child{margin-top:0}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.ctl{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;margin:8px 0;font-size:14px;color:var(--mut)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+input[type=checkbox]{accent-color:var(--acc);width:18px;height:18px}
+input[type=color]{width:40px;height:32px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+textarea,select,input[type=search]{width:100%;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit}
+textarea{min-height:64px;resize:vertical}
+.chip{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.on{border-color:var(--acc);color:var(--acc)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg label{flex:1;text-align:center;padding:7px 12px;cursor:pointer;font-size:14px}
+.seg input{display:none}
+.seg label:has(input:checked){background:var(--acc);color:#111}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sw button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+.fonts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.fi{content-visibility:auto;contain-intrinsic-size:auto 52px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:22px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.fi.on{border-color:var(--acc)}
+.fh{grid-column:1/-1;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-top:8px}
+.tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.tp{aspect-ratio:4/3;border-radius:12px;border:1px solid var(--line);background:linear-gradient(160deg,#3a3f4a,#101014);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px;overflow:hidden}
+.tp span{font-size:24px;line-height:1.05;text-align:center;white-space:pre-line;max-width:100%}
+.tp small{font:12px system-ui,sans-serif;color:var(--mut)}
+#modal{position:fixed;inset:0;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:9}
+#modal[hidden]{display:none}
+#modal img{max-width:100%;max-height:70dvh;border-radius:6px}
+#modal p{margin:0;color:var(--mut);font-size:13px;text-align:center}
+.cbtn{width:48px;height:32px;border-radius:8px;border:1px solid var(--line);cursor:pointer;padding:0;background:#fff}
+#picker{position:fixed;left:0;right:0;bottom:0;height:46dvh;background:#121215;border-top:1px solid var(--line);padding:12px 14px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;z-index:5}
+#picker[hidden]{display:none}
+#sv{position:relative;flex:1;min-height:100px;border-radius:10px;touch-action:none;cursor:crosshair;background-image:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent)}
+#svDot{position:absolute;width:22px;height:22px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #0009;transform:translate(-50%,-50%);pointer-events:none}
+#hue{-webkit-appearance:none;appearance:none;height:26px;border-radius:13px;margin:0;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+#hue::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid #0009}
+#hue::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #0009}
+#pkPrev{width:44px;height:38px;border-radius:8px;border:1px solid var(--line);flex:none}
+#hex{flex:1;min-width:0;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:15px ui-monospace,monospace;text-transform:uppercase}
+@media (min-width:900px){
+  #picker{left:auto;top:0;width:400px;height:100dvh;border-left:1px solid var(--line)}
+  body{grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:auto minmax(0,1fr)}
+  header{grid-column:1/-1}
+  aside{grid-column:2;grid-row:2;border-top:0;border-left:1px solid var(--line)}
+  #stage{padding:24px}
+}
+</style>
+</head>
+<body>
+<header>
+  <label class="btn">Apri foto<input type="file" id="file" accept="image/*" hidden></label>
+  <b>Testo su Foto</b>
+  <button class="btn primary" id="save">Salva</button>
+</header>
+<main id="stage"><canvas id="cv"></canvas></main>
+<aside>
+  <nav>
+    <button data-tab="modelli" class="on">Modelli</button>
+    <button data-tab="testo">Testo</button>
+    <button data-tab="font">Font</button>
+    <button data-tab="colore">Colore</button>
+    <button data-tab="effetti">Effetti</button>
+  </nav>
+
+  <section data-panel="modelli" class="on"><select id="tc" style="margin-bottom:4px"></select><div class="tpls" id="tpls"></div></section>
+
+  <section data-panel="testo">
+    <div class="row" id="layers"></div>
+    <div class="row">
+      <button class="btn" id="add">+ Nuovo testo</button>
+      <button class="btn" id="dup">Duplica</button>
+      <button class="btn" id="del">Elimina</button>
+    </div>
+    <textarea data-k="text" placeholder="Scrivi qui… (a capo = nuova riga)"></textarea>
+    <div class="row seg">
+      <label><input type="radio" name="al" data-k="align" value="left">Sinistra</label>
+      <label><input type="radio" name="al" data-k="align" value="center">Centro</label>
+      <label><input type="radio" name="al" data-k="align" value="right">Destra</label>
+    </div>
+    <label class="ctl">Dimensione<input type="range" data-k="size" min="1" max="60" step="0.5"></label>
+    <label class="ctl">Spaziatura<input type="range" data-k="ls" min="-10" max="80" step="1"></label>
+    <label class="ctl">Interlinea<input type="range" data-k="lh" min="0.7" max="2" step="0.05"></label>
+    <label class="ctl">Rotazione<input type="range" data-k="rot" min="-180" max="180" step="1"></label>
+    <label class="ctl">Opacità<input type="range" data-k="opacity" min="0.1" max="1" step="0.05"></label>
+    <label class="ctl">Maiuscolo<input type="checkbox" data-k="upper"></label>
+    <label class="ctl">Corsivo<input type="checkbox" data-k="italic"></label>
+    <p style="color:var(--mut);font-size:13px">Trascina il testo sulla foto. Due dita: ingrandisci e ruota. Su PC: rotellina per la dimensione.</p>
+  </section>
+
+  <section data-panel="font">
+    <label class="ctl">Spessore<select data-k="weight" data-num id="weight"></select></label>
+    <div class="row"><input type="search" id="fq" placeholder="Cerca font…" style="flex:1"><select id="fc" style="width:auto"></select></div>
+    <div class="fonts" id="fonts"></div>
+    <h4>Offline</h4>
+    <p style="color:var(--mut);font-size:13px;margin:4px 0">I font che usi vengono salvati da soli. Per averli tutti senza internet (circa 6–8 MB), scaricali qui con il Wi-Fi.</p>
+    <div class="row"><button class="btn" id="offline">Scarica tutti i font</button><span id="offst" style="color:var(--mut);font-size:13px"></span></div>
+  </section>
+
+  <section data-panel="colore">
+    <h4>Colore testo</h4>
+    <div class="sw" data-sw="color"></div>
+    <label class="ctl">Tavolozza<button class="cbtn" data-c="color" aria-label="Scegli il colore del testo"></button></label>
+    <h4>Sfumatura</h4>
+    <label class="ctl">Attiva<input type="checkbox" data-k="grad"></label>
+    <div class="sw" data-sw="color2"></div>
+    <label class="ctl">Secondo colore<button class="cbtn" data-c="color2" aria-label="Scegli il secondo colore"></button></label>
+  </section>
+
+  <section data-panel="effetti">
+    <h4>Ombra / bagliore</h4>
+    <label class="ctl">Attiva<input type="checkbox" data-k="shadow"></label>
+    <label class="ctl">Colore<button class="cbtn" data-c="shColor" aria-label="Scegli il colore dell'ombra"></button></label>
+    <label class="ctl">Morbidezza<input type="range" data-k="shBlur" min="0" max="100" step="1"></label>
+    <label class="ctl">Distanza<input type="range" data-k="shY" min="-20" max="20" step="1"></label>
+    <h4>Contorno</h4>
+    <label class="ctl">Attivo<input type="checkbox" data-k="stroke"></label>
+    <label class="ctl">Colore<button class="cbtn" data-c="stColor" aria-label="Scegli il colore del contorno"></button></label>
+    <label class="ctl">Spessore<input type="range" data-k="stW" min="1" max="25" step="0.5"></label>
+    <h4>Riquadro dietro</h4>
+    <label class="ctl">Attivo<input type="checkbox" data-k="bg"></label>
+    <label class="ctl">Colore<button class="cbtn" data-c="bgColor" aria-label="Scegli il colore del riquadro"></button></label>
+    <label class="ctl">Opacità<input type="range" data-k="bgOp" min="0" max="1" step="0.05"></label>
+    <label class="ctl">Margine<input type="range" data-k="bgPad" min="0" max="1.5" step="0.05"></label>
+    <label class="ctl">Angoli<input type="range" data-k="bgR" min="0" max="1" step="0.05"></label>
+    <h4>Foto</h4>
+    <label class="ctl">Velo<select data-k="ov" data-scope="doc">
+      <option value="none">Nessuno</option><option value="dark">Scurisci tutto</option>
+      <option value="bottom">Sfumato in basso</option><option value="top">Sfumato in alto</option>
+      <option value="vignette">Vignettatura</option><option value="letterbox">Bande cinema</option>
+    </select></label>
+    <label class="ctl">Intensità<input type="range" data-k="ova" data-scope="doc" min="0" max="1" step="0.05"></label>
+  </section>
+</aside>
+
+<div id="picker" hidden>
+  <div class="row" style="margin:0"><b id="pkTitle" style="flex:1"></b><button class="btn primary" id="pkOk">Fatto</button></div>
+  <div id="sv"><div id="svDot"></div></div>
+  <input type="range" id="hue" min="0" max="360" step="1" aria-label="Tinta">
+  <div class="row" style="margin:0;flex-wrap:nowrap"><span id="pkPrev"></span><input id="hex" maxlength="7" aria-label="Codice HEX" autocomplete="off" spellcheck="false"></div>
+  <div class="sw" id="pkSw" style="margin:0"></div>
+</div>
+
+<div id="modal" hidden>
+  <img id="out" alt="Anteprima dell'immagine salvata">
+  <p>Sul telefono puoi anche tenere premuto sull'immagine per salvarla.</p>
+  <div class="row">
+    <button class="btn primary" id="share" hidden>Condividi / Salva in Foto</button>
+    <button class="btn" id="dl">Scarica</button>
+    <button class="btn" id="close">Chiudi</button>
+  </div>
+</div>
+
+<script>
+// Font Google: "Nome:pesi" (pesi opzionali, default 400)
+const FONTS = {
+  'Cinema': ['Bebas Neue','Anton','Oswald:300;500;700','League Gothic','Six Caps','Antonio:400;700','Teko:400;600','Fjalla One','Pathway Gothic One','Saira Extra Condensed:300;700','Barlow Condensed:300;600;800','Big Shoulders Display:400;800','Staatliches','Archivo Black','Archivo Narrow:400;700','Cinzel:400;800','Cinzel Decorative:400;900','Marcellus','Forum','Italiana','Tenor Sans','Julius Sans One','Syncopate:400;700','Michroma','Limelight','Poiret One'],
+  'Serif eleganti': ['Playfair Display:400;900','Cormorant Garamond:300;600','Bodoni Moda:400;800','DM Serif Display','Prata','Abril Fatface','Libre Baskerville','Lora:400;700','Merriweather:300;900','EB Garamond:400;800','Crimson Text','Old Standard TT','Spectral:300;800','Fraunces:300;900','Yeseva One','Gloock','Rozha One','Ultra','Alfa Slab One','Zilla Slab:400;700','Arvo','Bitter:400;800','Roboto Slab:300;800','Holtwood One SC','Bevan'],
+  'Moderni / social': ['Montserrat:300;600;900','Poppins:300;600;900','Inter:400;800','Raleway:200;800','Lato:300;900','Work Sans:300;800','Outfit:300;800','Syne:400;800','Unbounded:400;900','Space Grotesk:400;700','DM Sans:400;800','Manrope:300;800','Sora:300;800','Lexend:300;800','Kanit:300;800','Josefin Sans:300;700','Comfortaa:300;700','Fredoka:400;700','Baloo 2:400;800'],
+  'Impatto': ['Bungee','Bungee Shade','Bangers','Luckiest Guy','Titan One','Lilita One','Paytone One','Passion One','Chango','Shrikhand','Righteous','Russo One','Rubik Mono One','Black Ops One','Graduate','Monoton','Lobster'],
+  'Script': ['Pacifico','Yellowtail','Kaushan Script','Satisfy','Great Vibes','Allura','Parisienne','Sacramento','Mrs Saint Delafield','Monsieur La Doulaise','Dancing Script:400;700'],
+  'Scritto a mano': ['Caveat:400;700','Permanent Marker','Rock Salt','Reenie Beanie','Homemade Apple','Nothing You Could Do','Covered By Your Grace','Gloria Hallelujah','Shadows Into Light'],
+  'Retro & sci-fi': ['Orbitron:400;900','Audiowide','Exo 2:300;900','Rajdhani:400;700','Chakra Petch:400;700','Quantico','Major Mono Display','Zen Dots','Krona One','Gruppo','Special Elite','Courier Prime','IBM Plex Mono:400;700','Space Mono','VT323','Press Start 2P'],
+  'Horror & western': ['Creepster','Nosifer','Butcherman','Metal Mania','UnifrakturMaguntia','Pirata One','Grenze Gotisch:400;800','New Rocker','Rye','Smokum','Ewert','Sancreek'],
+};
+const FL = Object.entries(FONTS).flatMap(([cat, arr]) => arr.map(s => {
+  const [name, w] = s.split(':'); return { name, cat, w: w ? w.split(';').map(Number) : [400] };
+}));
+// un foglio per categoria: Google rifiuta (403) una richiesta con tutti i 135 font insieme
+const CSS = Object.keys(FONTS).map(c => 'https://fonts.googleapis.com/css2?' + FL.filter(f => f.cat === c).map(f =>
+  'family=' + f.name.replace(/ /g, '+') + (f.w.length > 1 || f.w[0] !== 400 ? ':wght@' + f.w.join(';') : '')).join('&') + '&display=swap');
+const cssReady = Promise.all(CSS.map(href => new Promise(res =>
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href, onload: res, onerror: res })))));
+cssReady.then(() => { asked.clear(); render(); }); // i font richiesti prima che i CSS arrivassero vanno richiesti di nuovo
+
+const SWATCHES = ['#ffffff','#f5efe0','#d9d9d9','#8a8a8a','#111111','#e50914','#ff2d55','#ff3cac','#ff6b35','#ffb300','#ffe14d','#e6b450','#b8862b','#2bd2ff','#3a86ff','#14213d','#00f5d4','#06d6a0','#7b2ff7','#a3b18a','#d4a373'];
+const WNAMES = {200:'Extra light',300:'Light',400:'Normale',500:'Medium',600:'Semibold',700:'Bold',800:'Extra bold',900:'Black'};
+
+const newLayer = o => Object.assign({ text:'Il tuo testo', font:'Bebas Neue', weight:400, italic:false, size:12,
+  color:'#ffffff', grad:false, color2:'#ffb300', align:'center', x:.5, y:.5, rot:0, ls:0, lh:1.1, upper:false, opacity:1,
+  shadow:false, shBlur:20, shY:3, shColor:'#000000', stroke:false, stW:4, stColor:'#000000',
+  bg:false, bgColor:'#000000', bgOp:.6, bgPad:.4, bgR:.2 }, o);
+
+// Modelli: dimensioni in % della larghezza della foto, posizioni 0..1
+const LB = .3; // altezza bande cinema = intensità * LB (per lato)
+const TPL = [
+  { g:'Locandina', name:'Blockbuster', make:()=>({ ov:'bottom', ova:.85, layers:[
+    { text:'TITOLO DEL FILM', size:16, ls:8, y:.8, shadow:true, shBlur:30, shY:0 },
+    { text:'UN FILM DI NOME COGNOME', font:'Oswald', weight:300, size:3, ls:40, y:.7, color:'#d9d9d9' },
+    { text:'PROSSIMAMENTE AL CINEMA', font:'Antonio', weight:700, size:2.8, ls:30, y:.91, color:'#e6b450' } ]})},
+  { g:'Locandina', name:'Epico', make:()=>({ ov:'vignette', ova:.85, layers:[
+    { text:"L'ULTIMO REGNO", font:'Cinzel', weight:800, size:9, ls:10, grad:true, color:'#fff1c1', color2:'#b8862b', shadow:true, shBlur:25, shY:0 },
+    { text:'OGNI LEGGENDA HA UN INIZIO', font:'Cinzel', size:2.8, ls:35, y:.6, color:'#e8dcc0' } ]})},
+  { g:'Locandina', name:'Thriller', make:()=>({ ov:'dark', ova:.45, layers:[
+    { text:'NON\nGUARDARE\nINDIETRO', font:'Anton', size:14, lh:.95, y:.45 },
+    { text:'DAL 31 OTTOBRE', font:'Oswald', weight:500, size:3.5, ls:20, y:.75, color:'#e50914' } ]})},
+  { g:'Locandina', name:'Neon anni 80', make:()=>({ ov:'dark', ova:.5, layers:[
+    { text:'Midnight', font:'Monoton', size:13, color:'#ff3cac', shadow:true, shBlur:40, shY:0, shColor:'#ff3cac', y:.45 },
+    { text:'DRIVE', font:'Orbitron', weight:900, size:7, ls:30, color:'#2bd2ff', shadow:true, shBlur:40, shY:0, shColor:'#2bd2ff', y:.58 } ]})},
+  { g:'Locandina', name:'Horror', make:()=>({ ov:'vignette', ova:.95, layers:[
+    { text:'IT WAITS', font:'Creepster', size:15, color:'#c1121f', shadow:true, shBlur:20, shY:0 },
+    { text:'non spegnere la luce', font:'Special Elite', size:3.5, y:.62, color:'#dddddd' } ]})},
+  { g:'Locandina', name:'Western', make:()=>({ ov:'vignette', ova:.7, layers:[
+    { text:'WANTED', font:'Rye', size:16, color:'#f2d3a2', shadow:true, shBlur:10, shY:3, y:.3 },
+    { text:'DEAD OR ALIVE', font:'Smokum', size:6, ls:15, color:'#f2d3a2', y:.42 } ]})},
+  { g:'Sottotitoli', name:'Sottotitolo film', make:()=>({ ov:'letterbox', ova:.5, layers:[
+    { text:'Non pensavo saresti tornato.', font:'Inter', size:3.6, y:1 - .5 * LB / 2, shadow:true, shBlur:12, shY:2 } ]})},
+  { g:'Sottotitoli', name:'Sottotitolo giallo', make:()=>({ ov:'none', layers:[
+    { text:'Sottotitolo stile cinema', font:'Lato', weight:900, size:4.2, color:'#ffe14d', stroke:true, stW:9, y:.88 } ]})},
+  { g:'Sottotitoli', name:'Titolo di testa', make:()=>({ ov:'letterbox', ova:.4, layers:[
+    { text:'ROMA, 1974', font:'Courier Prime', size:3.5, ls:30, y:.5, shadow:true, shBlur:10, shY:0 } ]})},
+  { g:'Citazioni', name:'Citazione elegante', make:()=>({ ov:'dark', ova:.5, layers:[
+    { text:'"La vita è come un film:\nnon puoi riavvolgerla."', font:'Playfair Display', size:6, lh:1.25, y:.46 },
+    { text:'— NOME COGNOME', font:'Cormorant Garamond', weight:600, size:2.8, ls:25, y:.6, color:'#d6c7a1' } ]})},
+  { g:'Citazioni', name:'Citazione script', make:()=>({ ov:'dark', ova:.4, layers:[
+    { text:'sempre avanti', font:'Great Vibes', size:16, y:.47, shadow:true, shBlur:20, shY:2 },
+    { text:'ESTATE 2026', font:'Montserrat', weight:300, size:3, ls:60, y:.6 } ]})},
+  { g:'Citazioni', name:'Minimal', make:()=>({ ov:'none', layers:[
+    { text:'less is more', font:'Josefin Sans', weight:300, size:6, ls:30, shadow:true, shBlur:15, shY:0, shColor:'#00000088' } ]})},
+  { g:'Social', name:'Vlog', make:()=>({ ov:'none', layers:[
+    { text:'HO PROVATO\nQUESTO PER 30 GIORNI', font:'Montserrat', weight:900, size:6.5, lh:1.1, color:'#111111', bg:true, bgColor:'#ffe14d', bgOp:1, bgPad:.35, bgR:.15, y:.2 } ]})},
+  { g:'Social', name:'TikTok', make:()=>({ ov:'none', layers:[
+    { text:'aspetta la fine 😳', font:'Poppins', weight:900, size:7, stroke:true, stW:12 } ]})},
+  { g:'Social', name:'Miniatura YouTube', make:()=>({ ov:'bottom', ova:.5, layers:[
+    { text:'NON CI CREDO', font:'Luckiest Guy', size:13, grad:true, color:'#fff36b', color2:'#ffb300', stroke:true, stW:10, shadow:true, shBlur:0, shY:6, rot:-4, y:.78 } ]})},
+  { g:'Social', name:'Didascalia pulita', make:()=>({ ov:'bottom', ova:.6, layers:[
+    { text:'Weekend a Lisbona', font:'DM Serif Display', size:8, y:.82, align:'left', x:.4 },
+    { text:'GIORNO 1 · PARTE 2', font:'Outfit', weight:300, size:2.6, ls:30, y:.9, align:'left', x:.3, color:'#dddddd' } ]})},
+
+  // ---- altri modelli ----
+  { g:'Locandina', name:'Fantascienza', make:()=>({ ov:'dark', ova:.4, layers:[
+    { text:'ORIZZONTE', font:'Michroma', size:8, ls:40, color:'#e0f7ff', shadow:true, shBlur:30, shY:0, shColor:'#2bd2ff' },
+    { text:"L'ULTIMA POSSIBILITÀ", font:'Rajdhani', size:3, ls:30, y:.58, color:'#9fd8ff' } ]})},
+  { g:'Locandina', name:'Dramma', make:()=>({ ov:'bottom', ova:.9, layers:[
+    { text:'Le stagioni\ndel silenzio', font:'Cormorant Garamond', weight:300, size:10, lh:1, y:.77 },
+    { text:'UN FILM DI NOME COGNOME', font:'Montserrat', weight:300, size:2.4, ls:40, y:.92, color:'#cccccc' } ]})},
+  { g:'Locandina', name:'Azione', make:()=>({ ov:'top', ova:.8, layers:[
+    { text:'ZERO\nLIMITI', size:22, lh:.85, grad:true, color:'#ffffff', color2:'#ff6b35', shadow:true, shBlur:20, shY:4, y:.25 },
+    { text:'QUESTA ESTATE', font:'Oswald', weight:700, size:3.5, ls:30, y:.45, color:'#ff6b35' } ]})},
+  { g:'Locandina', name:'Indie', make:()=>({ ov:'none', layers:[
+    { text:'piccole cose', font:'Fraunces', weight:300, size:9, y:.14, shadow:true, shBlur:15, shY:0 },
+    { text:'un film di nome cognome', font:'Space Mono', size:2.4, ls:10, y:.93 } ]})},
+  { g:'Locandina', name:'Commedia', make:()=>({ ov:'none', layers:[
+    { text:'TUTTI\nIN VACANZA!', font:'Luckiest Guy', size:12, lh:1, color:'#ffe14d', stroke:true, stW:8, stColor:'#14213d', rot:-3, y:.22 } ]})},
+  { g:'Locandina', name:'Noir', make:()=>({ ov:'dark', ova:.55, layers:[
+    { text:'NOIR', font:'Limelight', size:22, ls:20, y:.45 },
+    { text:'Milano, 1958. Nessuno è innocente.', font:'Libre Baskerville', size:3, y:.58, color:'#d9d9d9' } ]})},
+  { g:'Locandina', name:'Fantasy', make:()=>({ ov:'vignette', ova:.8, layers:[
+    { text:'Il Regno di Ombra', font:'Cinzel Decorative', weight:900, size:7.5, grad:true, color:'#e8f5ff', color2:'#7b9cff', shadow:true, shColor:'#7b2ff7', shBlur:40, shY:0 } ]})},
+  { g:'Locandina', name:'Anime', make:()=>({ ov:'none', layers:[
+    { text:'NUOVO INIZIO', font:'Russo One', size:9, stroke:true, stW:10, stColor:'#ff2d55', rot:-6, y:.22 } ]})},
+  { g:'Locandina', name:'Documentario', make:()=>({ ov:'bottom', ova:.75, layers:[
+    { text:'IL RESPIRO DEL MARE', font:'Montserrat', weight:900, size:6.5, ls:5, y:.85 },
+    { text:'UN VIAGGIO LUNGO UN ANNO', font:'Montserrat', weight:300, size:2.4, ls:35, y:.91, color:'#cccccc' } ]})},
+
+  { g:'Sottotitoli', name:'Luogo e ora', make:()=>({ ov:'none', layers:[
+    { text:'Napoli — 06:42', font:'IBM Plex Mono', size:2.8, y:.93, shadow:true, shBlur:8, shY:0 } ]})},
+  { g:'Sottotitoli', name:'Capitolo', make:()=>({ ov:'letterbox', ova:.45, layers:[
+    { text:'CAPITOLO UNO', font:'Cinzel', size:3, ls:40, y:.43 },
+    { text:'Il ritorno', font:'Playfair Display', size:7, y:.52 } ]})},
+  { g:'Sottotitoli', name:'Dialogo', make:()=>({ ov:'none', layers:[
+    { text:'— Dove stai andando?\n— Lontano.', font:'Lato', weight:300, size:3.6, lh:1.4, y:.86, shadow:true, shBlur:10, shY:2 } ]})},
+
+  { g:'Citazioni', name:'Macchina da scrivere', make:()=>({ ov:'dark', ova:.35, layers:[
+    { text:'Scrivo per ricordare\nchi ero.', font:'Special Elite', size:5.5, lh:1.4 } ]})},
+  { g:'Citazioni', name:'Grassetto moderno', make:()=>({ ov:'dark', ova:.5, layers:[
+    { text:'FAI QUELLO\nCHE AMI.', font:'Archivo Black', size:10, lh:1 },
+    { text:'@tuonome', font:'Inter', size:2.8, y:.62, color:'#cccccc' } ]})},
+  { g:'Citazioni', name:'Mano libera', make:()=>({ ov:'none', layers:[
+    { text:'ricordati di respirare', font:'Caveat', weight:700, size:9, shadow:true, shBlur:15, shY:2, rot:-3 } ]})},
+  { g:'Citazioni', name:'Serif classico', make:()=>({ ov:'vignette', ova:.7, layers:[
+    { text:'«Chi va piano\nva sano e va lontano.»', font:'EB Garamond', size:5.5, lh:1.3, y:.47 },
+    { text:'PROVERBIO', font:'Tenor Sans', size:2.4, ls:40, y:.6, color:'#d6c7a1' } ]})},
+  { g:'Citazioni', name:'Riquadro bianco', make:()=>({ ov:'none', layers:[
+    { text:'Un giorno alla volta.', font:'Playfair Display', size:5.5, color:'#111111', bg:true, bgColor:'#ffffff', bgOp:.9, bgPad:.6, bgR:0 } ]})},
+
+  { g:'Social', name:'POV', make:()=>({ ov:'none', layers:[
+    { text:'POV: è lunedì', font:'Poppins', weight:600, size:6, color:'#111111', bg:true, bgColor:'#ffffff', bgOp:1, bgPad:.3, bgR:.3, y:.18 } ]})},
+  { g:'Social', name:'Trucchi', make:()=>({ ov:'top', ova:.7, layers:[
+    { text:'3 TRUCCHI\nCHE NESSUNO TI DICE', size:11, lh:.95, grad:true, color:'#ffffff', color2:'#ffe14d', stroke:true, stW:5, y:.18 } ]})},
+  { g:'Social', name:'Storia IG', make:()=>({ ov:'dark', ova:.25, layers:[
+    { text:'cosa ho mangiato oggi', font:'Pacifico', size:7, shadow:true, shBlur:12, shY:2, y:.15 } ]})},
+  { g:'Social', name:'Annuncio', make:()=>({ ov:'dark', ova:.35, layers:[
+    { text:'NOVITÀ', font:'Syne', weight:800, size:14, ls:5, y:.45, shadow:true, shBlur:20, shY:0 },
+    { text:'link in bio', font:'Space Grotesk', size:3.2, color:'#111111', bg:true, bgColor:'#ffe14d', bgOp:1, bgPad:.4, bgR:1, y:.57 } ]})},
+  { g:'Social', name:'Domanda', make:()=>({ ov:'none', layers:[
+    { text:'TU COSA\nNE PENSI?', font:'Unbounded', weight:900, size:8, lh:1.05, bg:true, bgColor:'#7b2ff7', bgOp:.9, bgPad:.4, bgR:.25 } ]})},
+  { g:'Social', name:'Fumetto pop', make:()=>({ ov:'none', layers:[
+    { text:'WOW!', font:'Bangers', size:24, color:'#ff3cac', stroke:true, stW:8, stColor:'#ffffff', shadow:true, shBlur:0, shY:8, shColor:'#111111', rot:-8 } ]})},
+  { g:'Social', name:'Podcast', make:()=>({ ov:'bottom', ova:.85, layers:[
+    { text:'EPISODIO 12', font:'Space Grotesk', weight:700, size:3, ls:30, y:.77, color:'#ffb300' },
+    { text:'Come ho lasciato\nil lavoro', font:'Sora', weight:800, size:7.5, lh:1.05, y:.86 } ]})},
+
+  { g:'Viaggio', name:'Cartolina', make:()=>({ ov:'none', layers:[
+    { text:'Saluti da', font:'Yellowtail', size:8, y:.4, shadow:true, shBlur:15, shY:2 },
+    { text:'ROMA', font:'Alfa Slab One', size:24, grad:true, color:'#ffe14d', color2:'#ff6b35', stroke:true, stW:4, stColor:'#14213d', y:.53 } ]})},
+  { g:'Viaggio', name:'Coordinate', make:()=>({ ov:'bottom', ova:.6, layers:[
+    { text:'ISLANDA', font:'Syncopate', weight:700, size:8, ls:40, y:.84 },
+    { text:'64.1466° N, 21.9426° W', font:'Space Mono', size:2.4, y:.91, color:'#dddddd' } ]})},
+  { g:'Viaggio', name:'Diario', make:()=>({ ov:'none', layers:[
+    { text:'giorno 3', font:'Homemade Apple', size:5, y:.1, shadow:true, shBlur:12, shY:0 },
+    { text:'perdersi è il bello', font:'Caveat', size:7, y:.88, shadow:true, shBlur:12, shY:0 } ]})},
+  { g:'Viaggio', name:'Città gigante', make:()=>({ ov:'dark', ova:.25, layers:[
+    { text:'TOKYO', font:'Big Shoulders Display', weight:800, size:36, ls:-2, opacity:.9 } ]})},
+  { g:'Viaggio', name:'Montagna', make:()=>({ ov:'top', ova:.7, layers:[
+    { text:'ALTA VIA', size:14, ls:20, y:.12 },
+    { text:'2.865 m', font:'Barlow Condensed', weight:300, size:4, ls:30, y:.21 } ]})},
+
+  { g:'Eventi', name:'Compleanno', make:()=>({ ov:'dark', ova:.3, layers:[
+    { text:'Buon\nCompleanno', font:'Great Vibes', size:13, lh:1, color:'#ffe14d', shadow:true, shBlur:15, shY:2 },
+    { text:'ANNA · 30', font:'Montserrat', weight:600, size:3, ls:40, y:.66 } ]})},
+  { g:'Eventi', name:'Matrimonio', make:()=>({ ov:'dark', ova:.3, layers:[
+    { text:'Giulia & Marco', font:'Parisienne', size:10 },
+    { text:'12 · 06 · 2027', font:'Cormorant Garamond', weight:300, size:3.5, ls:30, y:.6 } ]})},
+  { g:'Eventi', name:'Party', make:()=>({ ov:'dark', ova:.45, layers:[
+    { text:'PARTY', font:'Monoton', size:20, color:'#00f5d4', shadow:true, shBlur:40, shY:0, shColor:'#00f5d4' },
+    { text:'SABATO · ORE 22', font:'Righteous', size:4, ls:15, y:.63, color:'#ff3cac' } ]})},
+  { g:'Eventi', name:'Feste', make:()=>({ ov:'vignette', ova:.6, layers:[
+    { text:'Buone Feste', font:'Mrs Saint Delafield', size:14, shadow:true, shBlur:20, shY:0, shColor:'#ffe14d' } ]})},
+  { g:'Eventi', name:'Laurea', make:()=>({ ov:'top', ova:.6, layers:[
+    { text:'DOTTORE!', font:'Abril Fatface', size:15, grad:true, color:'#fff1c1', color2:'#c9a227', shadow:true, shBlur:20, shY:3, y:.18 },
+    { text:'110 e lode', font:'Dancing Script', weight:700, size:6, y:.29 } ]})},
+  { g:'Eventi', name:'Concerto', make:()=>({ ov:'bottom', ova:.85, layers:[
+    { text:'LIVE', font:'Rubik Mono One', size:20, color:'#e50914', y:.75 },
+    { text:'TOUR 2027 · STADIO', font:'Oswald', weight:500, size:3, ls:20, y:.88 } ]})},
+
+  { g:'Editoriale', name:'Copertina rivista', make:()=>({ ov:'none', layers:[
+    { text:'ÉLAN', font:'Bodoni Moda', weight:800, size:30, ls:-1, y:.12 },
+    { text:'IL NUOVO MINIMALISMO', font:'Montserrat', weight:600, size:2.8, ls:25, y:.9 } ]})},
+  { g:'Editoriale', name:'Moda', make:()=>({ ov:'dark', ova:.2, layers:[
+    { text:'autunno\ninverno', font:'Italiana', size:12, lh:.9 },
+    { text:'COLLEZIONE 27', font:'Julius Sans One', size:2.6, ls:50, y:.66 } ]})},
+  { g:'Editoriale', name:'Lusso', make:()=>({ ov:'dark', ova:.4, layers:[
+    { text:'NOTTE', font:'Prata', size:14, ls:30, grad:true, color:'#f5efe0', color2:'#b8862b' } ]})},
+  { g:'Editoriale', name:'Carta crema', make:()=>({ ov:'none', layers:[
+    { text:'Less, but better.', font:'DM Serif Display', size:7, color:'#111111', bg:true, bgColor:'#f5efe0', bgOp:1, bgPad:.8, bgR:0, y:.85 } ]})},
+
+  { g:'Sport', name:'Motivazione', make:()=>({ ov:'dark', ova:.45, layers:[
+    { text:'NO PAIN\nNO GAIN', font:'Anton', size:16, lh:.9, grad:true, color:'#ffffff', color2:'#8a8a8a' } ]})},
+  { g:'Sport', name:'Match day', make:()=>({ ov:'bottom', ova:.85, layers:[
+    { text:'MATCH DAY', font:'Teko', weight:600, size:16, y:.8 },
+    { text:'DOMENICA · ORE 15:00', font:'Barlow Condensed', weight:600, size:3.5, ls:15, y:.9, color:'#ffb300' } ]})},
+  { g:'Sport', name:'Traguardo', make:()=>({ ov:'top', ova:.7, layers:[
+    { text:'42,195 KM', font:'Saira Extra Condensed', weight:700, size:18, stroke:true, stW:4, y:.14 },
+    { text:'PRIMA MARATONA', font:'Kanit', weight:300, size:3.5, ls:25, y:.24 } ]})},
+
+  { g:'Food', name:'Ricetta', make:()=>({ ov:'bottom', ova:.75, layers:[
+    { text:'Carbonara', font:'Lobster', size:13, y:.81 },
+    { text:'LA RICETTA ORIGINALE', font:'Josefin Sans', weight:700, size:3, ls:25, y:.91 } ]})},
+  { g:'Food', name:'Brunch', make:()=>({ ov:'none', layers:[
+    { text:'brunch\ntime', font:'Shrikhand', size:13, lh:.95, color:'#ffe14d', stroke:true, stW:5, stColor:'#ff6b35', rot:-5 } ]})},
+  { g:'Food', name:'Bistrot', make:()=>({ ov:'dark', ova:.45, layers:[
+    { text:'Menu del giorno', font:'Satisfy', size:9, y:.4 },
+    { text:'PASTA · VINO · DOLCE', font:'Raleway', weight:200, size:3.2, ls:30, y:.52 } ]})},
+
+  { g:'Retro', name:'VHS', make:()=>({ ov:'none', layers:[
+    { text:'PLAY ▶  00:14:27', font:'VT323', size:5, shadow:true, shColor:'#2bd2ff', shBlur:10, shY:0, y:.07, align:'left', x:.3 },
+    { text:'AGO 23 1998', font:'VT323', size:5, color:'#ffe14d', y:.93, align:'right', x:.75 } ]})},
+  { g:'Retro', name:'Anni 70', make:()=>({ ov:'none', layers:[
+    { text:'Estate\n1976', font:'Bungee Shade', size:12, lh:1, color:'#ff6b35' } ]})},
+  { g:'Retro', name:'Arcade', make:()=>({ ov:'dark', ova:.5, layers:[
+    { text:'GAME OVER', font:'Press Start 2P', size:6, color:'#ffe14d', shadow:true, shBlur:30, shY:0, shColor:'#ff3cac' },
+    { text:'INSERT COIN', font:'Press Start 2P', size:2.4, y:.6, color:'#00f5d4' } ]})},
+  { g:'Retro', name:'Synthwave', make:()=>({ ov:'bottom', ova:.6, layers:[
+    { text:'Sunset', font:'Kaushan Script', size:14, grad:true, color:'#ffe14d', color2:'#ff3cac', shadow:true, shBlur:40, shY:0, shColor:'#ff3cac' },
+    { text:'1987', font:'Orbitron', weight:900, size:6, ls:40, y:.62, color:'#2bd2ff', shadow:true, shBlur:30, shY:0, shColor:'#2bd2ff' } ]})},
+  { g:'Retro', name:'Pellicola', make:()=>({ ov:'vignette', ova:.5, layers:[
+    { text:'★ 35MM · 14A', font:'Courier Prime', size:2.6, color:'#ffb300', y:.95, align:'right', x:.8 } ]})},
+];
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const doc = { ov:'none', ova:.6 };
+let img, W, H, layers = [], sel = null;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const fontStr = (L, px) => `${L.italic ? 'italic ' : ''}${L.weight} ${px}px "${L.font}"`;
+const hexA = (h, a) => { const n = parseInt(h.slice(1, 7), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; };
+
+// offline un font non scaricato fa fallire load(): si usa il font di riserva invece di bloccare tutto
+const loadFont = L => document.fonts.load(fontStr(L, 40)).catch(() => []);
+const asked = new Set();
+function ensure(L) { // carica il font al primo uso e ridisegna
+  const k = fontStr(L, 40);
+  if (!document.fonts.check(k) && !asked.has(k)) { asked.add(k); loadFont(L).then(() => render()); }
+}
+
+function setImage(src) {
+  img = src;
+  const w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+  // shortcut: lato lungo max 4096px (limite memoria canvas su iPhone); per stampe enormi servirebbe export a tasselli
+  const k = Math.min(1, 4096 / Math.max(w, h));
+  W = cv.width = Math.round(w * k); H = cv.height = Math.round(h * k);
+  render();
+}
+
+function overlay() {
+  const a = doc.ova;
+  if (doc.ov === 'dark') { ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.fillRect(0, 0, W, H); }
+  if (doc.ov === 'bottom' || doc.ov === 'top') {
+    const g = doc.ov === 'bottom' ? ctx.createLinearGradient(0, H * .35, 0, H) : ctx.createLinearGradient(0, H * .65, 0, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  if (doc.ov === 'vignette') {
+    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .25, W / 2, H / 2, Math.hypot(W, H) / 2);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  if (doc.ov === 'letterbox') { const b = H * a * LB; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, b); ctx.fillRect(0, H - b, W, b); }
+}
+
+function drawLayer(L, box) {
+  const px = L.size / 100 * W;
+  ctx.save();
+  ctx.font = fontStr(L, px); ensure(L);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = (L.ls / 100 * px) + 'px'; // shortcut: Safari vecchi ignorano la spaziatura
+  const lines = (L.upper ? L.text.toUpperCase() : L.text).split('\n');
+  const w = Math.max(1, ...lines.map(t => ctx.measureText(t).width)), lh = px * L.lh, h = lh * lines.length, p = L.bgPad * px;
+  L._w = w + (L.bg ? 2 * p : 0); L._h = h + (L.bg ? 2 * p : 0);
+  ctx.translate(L.x * W, L.y * H); ctx.rotate(L.rot * Math.PI / 180); ctx.globalAlpha = L.opacity;
+  if (L.bg) { ctx.fillStyle = hexA(L.bgColor, L.bgOp); ctx.beginPath(); ctx.roundRect(-w / 2 - p, -h / 2 - p, w + 2 * p, h + 2 * p, L.bgR * px); ctx.fill(); }
+  ctx.textAlign = L.align; ctx.textBaseline = 'middle';
+  const ax = L.align === 'left' ? -w / 2 : L.align === 'right' ? w / 2 : 0, ly = i => -h / 2 + lh * (i + .5);
+  const shadowOn = () => { if (L.shadow) { ctx.shadowColor = L.shColor; ctx.shadowBlur = L.shBlur / 100 * px; ctx.shadowOffsetY = L.shY / 100 * px; } };
+  shadowOn();
+  if (L.stroke) {
+    ctx.lineJoin = 'round'; ctx.lineWidth = L.stW / 100 * px * 2; ctx.strokeStyle = L.stColor;
+    lines.forEach((t, i) => ctx.strokeText(t, ax, ly(i)));
+    ctx.shadowColor = 'transparent'; // l'ombra è già sotto il contorno
+  }
+  if (L.grad) { const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, L.color); g.addColorStop(1, L.color2); ctx.fillStyle = g; }
+  else ctx.fillStyle = L.color;
+  lines.forEach((t, i) => ctx.fillText(t, ax, ly(i)));
+  if (box) {
+    ctx.shadowColor = 'transparent'; ctx.globalAlpha = 1; ctx.setLineDash([W / 100, W / 160]);
+    ctx.lineWidth = Math.max(2, W / 400); ctx.strokeStyle = '#ffb300';
+    const m = px * .15; ctx.strokeRect(-L._w / 2 - m, -L._h / 2 - m, L._w + 2 * m, L._h + 2 * m);
+  }
+  ctx.restore();
+}
+
+function render(ui = true) {
+  ctx.clearRect(0, 0, W, H); ctx.drawImage(img, 0, 0, W, H); overlay();
+  for (const L of layers) drawLayer(L, ui && L === sel);
+}
+
+// ---- interazione sul canvas ----
+function hit(x, y) {
+  for (let i = layers.length - 1; i >= 0; i--) {
+    const L = layers[i], a = -L.rot * Math.PI / 180, dx = x - L.x * W, dy = y - L.y * H;
+    const lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a), m = W * .02;
+    if (Math.abs(lx) <= L._w / 2 + m && Math.abs(ly) <= L._h / 2 + m) return L;
+  }
+}
+const pts = new Map(); let drag = null, pinch = null;
+const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); const p = pos(e); pts.set(e.pointerId, p);
+  if (pts.size === 1) { const L = hit(p.x, p.y); if (L) { select(L); drag = { dx: L.x * W - p.x, dy: L.y * H - p.y }; } else drag = null; }
+  else if (pts.size === 2 && sel) {
+    const [a, b] = [...pts.values()];
+    pinch = { d: Math.hypot(b.x - a.x, b.y - a.y), ang: Math.atan2(b.y - a.y, b.x - a.x), size: sel.size, rot: sel.rot }; drag = null;
+  }
+});
+cv.addEventListener('pointermove', e => {
+  if (!pts.has(e.pointerId)) return;
+  const p = pos(e); pts.set(e.pointerId, p);
+  if (pinch && pts.size === 2) {
+    const [a, b] = [...pts.values()];
+    sel.size = clamp(pinch.size * Math.hypot(b.x - a.x, b.y - a.y) / pinch.d, 1, 60);
+    sel.rot = Math.round(((pinch.rot + (Math.atan2(b.y - a.y, b.x - a.x) - pinch.ang) * 180 / Math.PI) % 360 + 540) % 360 - 180);
+    render();
+  } else if (drag && sel) {
+    let x = (p.x + drag.dx) / W; if (Math.abs(x - .5) < .015) x = .5; // aggancio al centro
+    sel.x = x; sel.y = (p.y + drag.dy) / H; render();
+  }
+});
+const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) { drag = null; sync(); } };
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+cv.addEventListener('wheel', e => {
+  if (!sel) return; e.preventDefault();
+  sel.size = clamp(sel.size * (e.deltaY < 0 ? 1.05 : 1 / 1.05), 1, 60); render(); sync();
+}, { passive: false });
+
+// ---- pannelli ----
+function select(L) { sel = L; renderLayers(); sync(); render(); }
+function renderLayers() {
+  const box = $('#layers'); box.replaceChildren();
+  layers.forEach(L => {
+    const b = document.createElement('button'); b.className = 'chip' + (L === sel ? ' on' : '');
+    b.textContent = L.text.split('\n')[0].trim() || 'Testo'; b.onclick = () => select(L); box.append(b);
+  });
+}
+function sync() {
+  if (sel) {
+    const f = FL.find(f => f.name === sel.font) || { w: [400] };
+    $('#weight').innerHTML = f.w.map(w => `<option value="${w}">${WNAMES[w] || w}</option>`).join('');
+    $$('.fi').forEach(b => b.classList.toggle('on', b.dataset.f === sel.font));
+  }
+  $$('.cbtn').forEach(b => b.style.background = sel ? sel[b.dataset.c] : 'transparent');
+  $$('[data-k]').forEach(t => {
+    const src = t.dataset.scope === 'doc' ? doc : sel; if (!src) return;
+    const v = src[t.dataset.k];
+    if (t.type === 'checkbox') t.checked = !!v; else if (t.type === 'radio') t.checked = t.value === String(v); else t.value = v;
+  });
+}
+document.addEventListener('input', e => {
+  const t = e.target, k = t.dataset.k; if (!k) return;
+  const src = t.dataset.scope === 'doc' ? doc : sel; if (!src) return;
+  src[k] = t.type === 'checkbox' ? t.checked : (t.type === 'range' || 'num' in t.dataset) ? +t.value : t.value;
+  if (k === 'text') renderLayers();
+  render();
+});
+$$('nav button').forEach(b => b.onclick = () => {
+  $$('nav button').forEach(x => x.classList.toggle('on', x === b));
+  $$('section').forEach(s => s.classList.toggle('on', s.dataset.panel === b.dataset.tab));
+});
+$('#add').onclick = () => { const L = newLayer({ y: .5 }); layers.push(L); select(L); };
+$('#dup').onclick = () => { if (!sel) return; const L = newLayer({ ...sel, y: Math.min(.95, sel.y + .06) }); layers.push(L); select(L); };
+$('#del').onclick = () => { if (!sel) return; layers = layers.filter(L => L !== sel); sel = layers.at(-1) || null; renderLayers(); sync(); render(); };
+
+// font
+$('#fc').innerHTML = '<option value="">Tutte le categorie</option>' + Object.keys(FONTS).map(c => `<option>${c}</option>`).join('');
+$('#fonts').innerHTML = Object.keys(FONTS).map(c => `<div class="fh" data-c="${c}">${c}</div>` +
+  FL.filter(f => f.cat === c).map(f => `<button class="fi" data-f="${f.name}" data-c="${c}" style="font-family:'${f.name}'">${f.name}</button>`).join('')).join('');
+const filterFonts = () => {
+  const q = $('#fq').value.toLowerCase(), c = $('#fc').value;
+  $$('#fonts > *').forEach(el => el.hidden = (c && el.dataset.c !== c) || (q && el.classList.contains('fi') && !el.dataset.f.toLowerCase().includes(q)) || (q && el.classList.contains('fh')));
+};
+$('#fq').oninput = filterFonts; $('#fc').onchange = filterFonts;
+$('#fonts').onclick = e => {
+  const b = e.target.closest('.fi'); if (!b || !sel) return;
+  const f = FL.find(f => f.name === b.dataset.f);
+  sel.font = f.name;
+  if (!f.w.includes(sel.weight)) sel.weight = f.w.reduce((a, w) => Math.abs(w - sel.weight) < Math.abs(a - sel.weight) ? w : a);
+  const L = sel;
+  loadFont(L).then(() => { render(); fit(L); render(); sync(); }); // font più largo → rimpicciolisci
+  sync(); render();
+};
+
+// colori
+$$('[data-sw]').forEach(box => {
+  box.innerHTML = SWATCHES.map(c => `<button style="background:${c}" data-v="${c}" aria-label="${c}"></button>`).join('');
+  box.onclick = e => { const v = e.target.dataset.v; if (!v || !sel) return; setColor(box.dataset.sw, v); sync(); render(); };
+});
+// scegliere il colore di un effetto lo attiva
+const TURN_ON = { color2: 'grad', shColor: 'shadow', stColor: 'stroke', bgColor: 'bg' };
+const setColor = (k, v) => { sel[k] = v; if (TURN_ON[k]) sel[TURN_ON[k]] = true; };
+
+// tavolozza completa: quadrato saturazione/luminosità + barra tinta + HEX
+const hsv2hex = (h, s, v) => '#' + [5, 3, 1].map(n => {
+  const k = (n + h / 60) % 6; return Math.round((v - v * s * Math.max(0, Math.min(k, 4 - k, 1))) * 255).toString(16).padStart(2, '0');
+}).join('');
+function hex2hsv(hex) {
+  const n = parseInt(hex.slice(1, 7), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), d = mx - Math.min(r, g, b);
+  let h = !d ? 0 : mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h *= 60; if (h < 0) h += 360;
+  return { h, s: mx ? d / mx : 0, v: mx };
+}
+const PK_TITLE = { color: 'Colore testo', color2: 'Secondo colore', shColor: 'Colore ombra', stColor: 'Colore contorno', bgColor: 'Colore riquadro' };
+const pk = { k: null, h: 0, s: 0, v: 1 };
+let raf; const renderSoon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => render()); };
+function pkDraw() {
+  const c = hsv2hex(pk.h, pk.s, pk.v);
+  $('#sv').style.backgroundColor = `hsl(${pk.h},100%,50%)`;
+  Object.assign($('#svDot').style, { left: pk.s * 100 + '%', top: (1 - pk.v) * 100 + '%', background: c });
+  $('#hue').value = pk.h; $('#pkPrev').style.background = c;
+  if (document.activeElement !== $('#hex')) $('#hex').value = c;
+}
+function pkSet(hex) { if (!sel) return; setColor(pk.k, hex || hsv2hex(pk.h, pk.s, pk.v)); pkDraw(); sync(); renderSoon(); }
+function openPicker(k) {
+  if (!sel) return; pk.k = k; Object.assign(pk, hex2hsv(sel[k]));
+  $('#pkTitle').textContent = PK_TITLE[k]; $('#picker').hidden = false; pkDraw();
+}
+$$('.cbtn').forEach(b => b.onclick = () => openPicker(b.dataset.c));
+$('#pkOk').onclick = () => { $('#picker').hidden = true; render(); };
+const sv = $('#sv'), svMove = e => {
+  const r = sv.getBoundingClientRect();
+  pk.s = clamp((e.clientX - r.left) / r.width, 0, 1); pk.v = 1 - clamp((e.clientY - r.top) / r.height, 0, 1); pkSet();
+};
+sv.onpointerdown = e => { sv.setPointerCapture(e.pointerId); svMove(e); };
+sv.onpointermove = e => { if (sv.hasPointerCapture(e.pointerId)) svMove(e); };
+$('#hue').oninput = e => { pk.h = +e.target.value; pkSet(); };
+$('#hex').oninput = e => {
+  const v = '#' + e.target.value.trim().replace(/^#/, '');
+  if (/^#[0-9a-f]{6}$/i.test(v)) { Object.assign(pk, hex2hsv(v)); pkSet(v.toLowerCase()); }
+};
+$('#pkSw').innerHTML = SWATCHES.map(c => `<button style="background:${c}" data-v="${c}" aria-label="${c}"></button>`).join('');
+$('#pkSw').onclick = e => { const v = e.target.dataset.v; if (v) { Object.assign(pk, hex2hsv(v)); pkSet(v); } };
+
+// modelli
+const fit = L => { if (L._w > W * .94) L.size *= W * .94 / L._w; }; // resta dentro la foto
+function applyTpl(t) {
+  const r = t.make(); doc.ov = r.ov; doc.ova = r.ova ?? .6;
+  const ls = layers = r.layers.map(newLayer); select(layers[0]);
+  Promise.all(ls.map(loadFont)).then(() => { if (layers !== ls) return; render(); ls.forEach(fit); render(); sync(); });
+}
+const GROUPS = [...new Set(TPL.map(t => t.g))];
+$('#tc').innerHTML = `<option value="">Tutti i modelli (${TPL.length})</option>` + GROUPS.map(g => `<option>${g}</option>`).join('');
+$('#tc').onchange = e => $$('#tpls > *').forEach(el => el.hidden = !!e.target.value && el.dataset.g !== e.target.value);
+const card = (t, i) => {
+  const L = newLayer(t.make().layers[0]);
+  const style = `font-family:'${L.font}';font-weight:${L.weight};color:${L.color};` +
+    (L.bg ? `background:${L.bgColor};color:${L.color};padding:2px 6px;` : '') +
+    (L.stroke ? `-webkit-text-stroke:1px ${L.stColor};paint-order:stroke;` : '') +
+    (L.shadow && L.shY === 0 ? `text-shadow:0 0 12px ${L.shColor};` : '');
+  return `<button class="tp" data-i="${i}" data-g="${t.g}"><span style="${style}">${L.text.split('\n')[0]}</span><small>${t.name}</small></button>`;
+};
+$('#tpls').innerHTML = GROUPS.map(g => `<div class="fh" data-g="${g}">${g}</div>` +
+  TPL.map((t, i) => t.g === g ? card(t, i) : '').join('')).join('');
+$('#tpls').onclick = e => { const b = e.target.closest('.tp'); if (b) applyTpl(TPL[b.dataset.i]); };
+
+// apri foto
+function loadFile(f) {
+  if (!f || !f.type.startsWith('image/')) return;
+  const i = new Image(), u = URL.createObjectURL(f);
+  i.onload = () => { setImage(i); URL.revokeObjectURL(u); };
+  i.onerror = () => alert('Non riesco ad aprire questa immagine. Prova con un JPG o PNG.');
+  i.src = u;
+}
+$('#file').onchange = e => loadFile(e.target.files[0]);
+$('#stage').ondragover = e => e.preventDefault();
+$('#stage').ondrop = e => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); };
+
+// salva
+let outBlob, outUrl;
+const outName = () => `testo-foto-${Date.now()}.jpg`;
+async function exportBlob() {
+  await cssReady;
+  await Promise.all(layers.map(loadFont));
+  render(false);
+  const b = await new Promise(r => cv.toBlob(r, 'image/jpeg', .95));
+  render(); return b;
+}
+$('#save').onclick = async () => {
+  outBlob = await exportBlob(); outUrl = URL.createObjectURL(outBlob);
+  $('#out').src = outUrl; $('#modal').hidden = false;
+  const file = new File([outBlob], outName(), { type: 'image/jpeg' });
+  $('#share').hidden = !(navigator.canShare && navigator.canShare({ files: [file] }));
+};
+$('#share').onclick = () => navigator.share({ files: [new File([outBlob], outName(), { type: 'image/jpeg' })] }).catch(() => {});
+$('#dl').onclick = () => { const a = document.createElement('a'); a.href = outUrl; a.download = outName(); a.click(); };
+$('#close').onclick = () => { $('#modal').hidden = true; URL.revokeObjectURL(outUrl); };
+
+// avvio: sfondo di prova finché non apri una foto
+const demo = document.createElement('canvas'); demo.width = 1080; demo.height = 1350;
+const dg = demo.getContext('2d'), gr = dg.createLinearGradient(0, 0, 1080, 1350);
+gr.addColorStop(0, '#2b5876'); gr.addColorStop(.55, '#4e4376'); gr.addColorStop(1, '#c06c48');
+dg.fillStyle = gr; dg.fillRect(0, 0, 1080, 1350);
+setImage(demo); applyTpl(TPL[0]);
+
+// offline: il service worker salva l'app e i font che passano di qui
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js');
+$('#offline').onclick = async () => {
+  const st = $('#offst');
+  if (!navigator.serviceWorker?.controller) { st.textContent = "Disponibile solo con l'app pubblicata online (ricarica la pagina una volta)."; return; }
+  navigator.storage?.persist?.(); // chiede al browser di non cancellare la cache
+  try {
+    const urls = new Set();
+    // shortcut: solo il sottoinsieme "latin" (copre italiano e accenti); cirillico/greco restano online
+    for (const href of CSS) for (const m of (await (await fetch(href)).text()).matchAll(/\/\* latin \*\/[^}]*?url\((https:[^)]+)\)/g)) urls.add(m[1]);
+    const list = [...urls]; let n = 0;
+    const worker = async () => { while (list.length) { await fetch(list.pop()).catch(() => {}); st.textContent = `${++n} / ${urls.size}`; } };
+    await Promise.all(Array.from({ length: 6 }, worker));
+    st.textContent = `Fatto: ${urls.size} file di font salvati.`;
+  } catch { st.textContent = 'Serve internet per scaricarli. Riprova con il Wi-Fi.'; }
+};
+
+// autotest: apri la pagina con #test → il titolo della scheda dice l'esito
+if (location.hash === '#test') (async () => {
+  const fails = []; await cssReady;
+  for (const t of TPL) for (const L of t.make().layers.map(newLayer)) {
+    const f = FL.find(f => f.name === L.font); if (!f || !f.w.includes(L.weight)) fails.push(`${t.name}: ${L.font} ${L.weight}`);
+  }
+  for (const c of ['#000000', '#ffffff', '#ff3cac', '#2bd2ff', '#7b9cff', '#123456']) {
+    const h = hex2hsv(c); if (hsv2hex(h.h, h.s, h.v) !== c) fails.push('colore ' + c);
+  }
+  for (const f of FL) if (!(await document.fonts.load(`${f.w.at(-1)} 40px "${f.name}"`)).length) fails.push(f.name);
+  for (const t of TPL) { applyTpl(t); const b = await exportBlob(); if (!b || b.size < 5000) fails.push('modello ' + t.name); }
+  console.assert(!fails.length, fails);
+  document.title = fails.length ? 'TEST FAIL: ' + fails.join(', ') : `TEST OK (${FL.length} font, ${TPL.length} modelli)`;
+})();
+</script>
+</body>
+</html>
